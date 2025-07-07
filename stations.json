@@ -1,0 +1,326 @@
+[
+  {
+    "name": "Novus Terminus",
+    "goods": {
+      "Astronautic": {
+        "sells": true,
+        "modifier": "0%"
+      },
+      "Component": {
+        "sells": false,
+        "modifier": "5%"
+      },
+      "Consumer": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Exotic": {
+        "sells": true,
+        "modifier": "-5%"
+      },
+      "Food": {
+        "sells": false,
+        "modifier": "10%"
+      },
+      "High Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Life Support": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Livestock": {
+        "sells": false,
+        "modifier": "5%"
+      },
+      "Low Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Luxury": {
+        "sells": true,
+        "modifier": "-20%"
+      },
+      "Maltech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Medical": {
+        "sells": false,
+        "modifier": "20%"
+      },
+      "Military": {
+        "sells": false,
+        "modifier": "5%"
+      },
+      "Pretech": {
+        "sells": true,
+        "modifier": "0%"
+      },
+      "Raw Material": {
+        "sells": true,
+        "modifier": "0%"
+      },
+      "Tool": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Vehicle": {
+        "sells": false,
+        "modifier": "5%"
+      }
+    }
+  },
+  {
+    "name": "Archimundus",
+    "goods": {
+      "Astronautic": {
+        "sells": false,
+        "modifier": "-15%"
+      },
+      "Component": {
+        "sells": false,
+        "modifier": "-15%"
+      },
+      "Consumer": {
+        "sells": false,
+        "modifier": "-15%"
+      },
+      "Exotic": {
+        "sells": true,
+        "modifier": "15%"
+      },
+      "Food": {
+        "sells": false,
+        "modifier": "-5%"
+      },
+      "High Tech": {
+        "sells": false,
+        "modifier": "-10%"
+      },
+      "Life Support": {
+        "sells": false,
+        "modifier": "-15%"
+      },
+      "Livestock": {
+        "sells": false,
+        "modifier": "-5%"
+      },
+      "Low Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Luxury": {
+        "sells": false,
+        "modifier": "15%"
+      },
+      "Maltech": {
+        "sells": true,
+        "modifier": "5%"
+      },
+      "Medical": {
+        "sells": false,
+        "modifier": "-10%"
+      },
+      "Military": {
+        "sells": false,
+        "modifier": "-5%"
+      },
+      "Pretech": {
+        "sells": true,
+        "modifier": "0%"
+      },
+      "Raw Material": {
+        "sells": false,
+        "modifier": "10%"
+      },
+      "Tool": {
+        "sells": false,
+        "modifier": "-5%"
+      },
+      "Vehicle": {
+        "sells": false,
+        "modifier": "-10%"
+      }
+    }
+  },
+  {
+    "name": "Fornax Prime",
+    "goods": {
+      "Astronautic": {
+        "sells": true,
+        "modifier": "-10%"
+      },
+      "Component": {
+        "sells": true,
+        "modifier": "0%"
+      },
+      "Consumer": {
+        "sells": false,
+        "modifier": "10%"
+      },
+      "Cultural": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Entertainment": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Exotic": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Food": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "High Tech": {
+        "sells": true,
+        "modifier": "5%"
+      },
+      "Illegal": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Information": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Life Support": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Livestock": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Low Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Luxury": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Maltech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Medical": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Military": {
+        "sells": true,
+        "modifier": "-20%"
+      },
+      "Pretech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Raw Material": {
+        "sells": true,
+        "modifier": "-30%"
+      },
+      "Tool": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Vehicle": {
+        "sells": true,
+        "modifier": "-5%"
+      }
+    }
+  },
+  {
+    "name": "Gemini A",
+    "goods": {
+      "Astronautic": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Component": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Consumer": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Cultural": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Entertainment": {
+        "sells": false,
+        "modifier": "10%"
+      },
+      "Exotic": {
+        "sells": false,
+        "modifier": "10%"
+      },
+      "Food": {
+        "sells": true,
+        "modifier": "-30%"
+      },
+      "High Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Illegal": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Information": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Life Support": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Livestock": {
+        "sells": true,
+        "modifier": "-30%"
+      },
+      "Low Tech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Luxury": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Maltech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Medical": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Military": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Pretech": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Raw Material": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Tool": {
+        "sells": false,
+        "modifier": "0%"
+      },
+      "Vehicle": {
+        "sells": false,
+        "modifier": "0%"
+      }
+    }
+  }
+]
