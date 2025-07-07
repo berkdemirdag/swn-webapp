@@ -73,66 +73,11 @@ def download_json_from_drive(filename):
     fh.seek(0)
     return json.load(fh)
 
-
-
-
-
 ###################################################################
 
 
 ship_money = 100000
 available_tons = 100
-
-stations_data_file = "stations.json"
-# --- Load stations from file ---
-def load_stations():
-    if os.path.exists(stations_data_file):
-        with open(stations_data_file, "r") as f:
-            return json.load(f)
-    return []
-
-# --- Save stations to file ---
-def save_stations(data):
-    with open(stations_data_file, "w") as f:
-        json.dump(data, f, indent=2)
-
-# Load once on app startup
-if "stations" not in st.session_state:
-    st.session_state.stations = load_stations()
-
-current_station_file = "current_station.json"
-
-ship_data_file = "ship.json"
-
-def load_ship():
-    if os.path.exists(ship_data_file):
-        with open(ship_data_file, "r") as f:
-            return json.load(f)
-    return {"inventory": {}, "credits": 100000, "cargo_limit": 50}
-
-def save_ship(data):
-    with open(ship_data_file, "w") as f:
-        json.dump(data, f, indent=2)
-
-# Load into session state
-if "ship" not in st.session_state:
-    st.session_state.ship = load_ship()
-
-
-
-def save_current_station(name):
-    with open(current_station_file, "w") as f:
-        json.dump({"name": name}, f)
-def load_current_station():
-    if os.path.exists(current_station_file):
-        with open(current_station_file, "r") as f:
-            return json.load(f).get("name")
-    return None
-# Initialize current station in session state
-if "current_station" not in st.session_state:
-    st.session_state.current_station = load_current_station()
-
-
 
 all_tags = [
     "Astronautic",
@@ -229,35 +174,27 @@ trade_goods = [
     {"name": "Hoverbikes", "tags": ["Vehicle", "Consumer"], "base_price": 2000},
     ]
 
-price_variation_file = "price_variation.json"
-
-def load_price_variations():
-    if os.path.exists(price_variation_file):
-        with open(price_variation_file, "r") as f:
-            return json.load(f)
-    else:
-        initialize_variations()
-        with open(price_variation_file, "r") as f:
-            return json.load(f)
-        
-    return {}
-
-def save_price_variations(variations):
-    with open(price_variation_file, "w") as f:
-        json.dump(variations, f, indent=1)
-
-def initialize_variations():
+def update_price_variations():
     variations = {}
     for item in trade_goods:
         variation = random.uniform(0.9, 1.1)
         variations[item["name"]] = variation
-    save_price_variations(variations)
+    upload_json_to_drive("price_variations.json", variations)
+    st.session_state.price_variations = variations
+
+# Load once on app startup
+if "stations" not in st.session_state:
+    st.session_state.stations = download_json_from_drive("stations.json") or []
+
+if "current_station" not in st.session_state:
+    st.session_state.current_station = download_json_from_drive("current_station.json") or []
+
+if "ship" not in st.session_state:
+    st.session_state.ship = download_json_from_drive("ship.json") or {"inventory": {}, "credits": 100000, "cargo_limit": 50}
 
 if "price_variations" not in st.session_state:
-    st.session_state.price_variations = load_price_variations()
+    update_price_variations()
 
-
-# Initialize shop_items if not already present
 if "shop_items" not in st.session_state:
     st.session_state.shop_items = []
 
@@ -275,12 +212,7 @@ if current and not st.session_state.shop_items:
                     available_items.append(item)
         st.session_state.shop_items = available_items
 
-
-
-
-
 st.title("Stars Without Number Trading App")
-
 
 # Track selected tab persistently
 tab_names = ["Ship Cargo", "Buy Goods", "Sell Goods", "Travel", "Trade Station Config"]
@@ -337,7 +269,7 @@ if selected_tab == "Ship Cargo":
                 else:
                     del inventory[item_name]  # remove if 0
 
-                save_ship(ship)
+                upload_json_to_drive("ship.json", ship)
                 st.session_state.alert = f"Ejected {eject_qty} units of {item_name}"
                 st.rerun()
 
@@ -349,14 +281,14 @@ if selected_tab == "Ship Cargo":
     credit_cols = st.columns([1, 1])
     if credit_cols[0].button("Add Funds"):
         ship["credits"] += credit_delta
-        save_ship(ship)
+        upload_json_to_drive("ship.json", ship)
         st.session_state.alert = f"Added {credit_delta:.0f} credits" 
         st.rerun()
 
     if credit_cols[1].button("Spend Funds"):
         if ship["credits"] >= credit_delta:
             ship["credits"] -= credit_delta
-            save_ship(ship)
+            upload_json_to_drive("ship.json", ship)
             st.session_state.alert = f"Spent {credit_delta:.0f} credits"
             st.rerun()
         else:
@@ -374,7 +306,7 @@ if selected_tab == "Ship Cargo":
     if st.button("Add Cargo"):
         inventory = st.session_state.ship["inventory"]
         inventory[selected_item] = inventory.get(selected_item, 0) + manual_qty
-        save_ship(st.session_state.ship)
+        upload_json_to_drive("ship.json", st.session_state.ship)
         st.session_state.alert = f"Looted {manual_qty}x {selected_item}"
         st.rerun()
     
@@ -382,7 +314,7 @@ if selected_tab == "Ship Cargo":
     new_limit = st.number_input("Set new cargo limit", min_value=1, step=1, value=ship["cargo_limit"], key="cargo_limit_input")
     if st.button("Update Cargo Limit"):
         ship["cargo_limit"] = new_limit
-        save_ship(ship)
+        upload_json_to_drive("ship.json", st.session_state.ship)
         st.session_state.alert = f"Updated cargo limit to {new_limit} units"
         st.rerun()
 
@@ -459,7 +391,7 @@ elif selected_tab == "Buy Goods":
                 # Update inventory
                 inventory[item["name"]] = inventory.get(item["name"], 0) + amount
                 ship["credits"] -= total_cost
-                save_ship(ship)
+                upload_json_to_drive("ship.json", ship)
                 st.session_state.alert = f"Bought {amount}x {item['name']} for {total_cost:.0f} cr"
                 st.rerun()
 elif selected_tab == "Sell Goods":
@@ -540,7 +472,7 @@ elif selected_tab == "Sell Goods":
                     else:
                         del inventory[item_name]
 
-                    save_ship(ship)
+                    upload_json_to_drive("ship.json", ship)
                     st.session_state.alert = f"Sold {amount}x {item_name} for {total_value:.0f} cr"
                     st.rerun()
 elif selected_tab == "Travel":
@@ -557,7 +489,7 @@ elif selected_tab == "Travel":
         else:
             if cols[1].button("Travel", key=f"travel_{idx}"):
                 st.session_state.current_station = name
-                save_current_station(name)
+                upload_json_to_drive("current_station.json", name)
                 
                 # Re-generate shop items with 90% chance
                 shop_items = []
@@ -568,8 +500,8 @@ elif selected_tab == "Travel":
                 st.session_state.shop_items = shop_items
 
                 # Re-generate price variation
-                initialize_variations()
-                st.session_state.price_variations = load_price_variations()
+                update_price_variations()
+                
 
                 st.session_state.alert = f"Traveled to {name}"
                 st.rerun()
@@ -609,7 +541,7 @@ elif selected_tab == "Trade Station Config":
                 }
             }
             st.session_state.stations.append(station_data)
-            save_stations(st.session_state.stations)
+            upload_json_to_drive("stations.json", st.session_state.stations)
             st.session_state.alert = f"Saved station: {station_name}"
             st.rerun()
 
@@ -629,6 +561,6 @@ elif selected_tab == "Trade Station Config":
     
         if st.button("Delete Station", key=f"delete_{idx}"):
             del st.session_state.stations[idx]
-            save_stations(st.session_state.stations)
+            upload_json_to_drive("stations.json", st.session_state.stations)
             st.session_state.alert = f"Deleted station: {station['name']}"
             st.rerun()
