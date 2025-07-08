@@ -26,7 +26,7 @@ def upload_json(filename, data):
     supabase.storage.from_(bucket).upload(
         filename,
         tmp_path,
-        {"content-type": "application/json", "upsert": True}
+        {"content-type": "application/json", "upsert": "true"}
     )
 
     # Clean up temporary file
