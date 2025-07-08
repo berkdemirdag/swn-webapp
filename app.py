@@ -4,33 +4,45 @@ import json
 import os
 import math
 from supabase import create_client
-import io
+import tempfile
 
-# Load from Streamlit secrets
+# --- Supabase setup ---
 url = st.secrets["supabase"]["url"]
 key = st.secrets["supabase"]["key"]
-
 supabase = create_client(url, key)
-bucket = "swnbucket"  # create this on Supabase dashboard
+bucket = "swnbucket"  
 
 
+# --- Upload JSON file to Supabase Storage ---
 def upload_json(filename, data):
-    content = json.dumps(data, indent=2).encode("utf-8")
-    stream = io.BytesIO(content)
+    content = json.dumps(data, indent=2)
 
+    # Create a temporary file
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    # Upload the file by path
     supabase.storage.from_(bucket).upload(
-        filename,  # this is the path on Supabase
-        stream,
+        filename,
+        tmp_path,
         {"content-type": "application/json", "upsert": True}
     )
 
+    # Clean up temporary file
+    os.remove(tmp_path)
 
 
+# --- Download JSON file from Supabase Storage ---
 def download_json(filename):
-    res = supabase.storage.from_(bucket).download(filename)
-    if res:
-        return json.loads(res.decode())
-    else:
+    try:
+        res = supabase.storage.from_(bucket).download(filename)
+        if res:
+            return json.loads(res.decode())
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Failed to download {filename}: {e}")
         return None
 
 ###################################################################
