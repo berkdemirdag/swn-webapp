@@ -3,75 +3,28 @@ import random
 import json
 import os
 import math
-
-#GOOGLE DRIVE STUFF
-###################################################################
-import json
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload, MediaIoBaseDownload
+from supabase import create_client
 import io
 
-FOLDER_ID = '1IWzgBwqL85nGjxvQUr0vDRx_IzojNUF1'
-# --- Load from Streamlit secrets ---
-creds_dict = st.secrets["gdrive_service_account"]
+# Load from Streamlit secrets
+url = st.secrets["supabase"]["url"]
+key = st.secrets["supabase"]["key"]
 
-# --- Authenticate ---
-creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/drive.file"])
-drive_service = build("drive", "v3", credentials=creds)
-
+supabase = create_client(url, key)
+bucket = "swnbucket"  # create this on Supabase dashboard
 
 
-def upload_json_to_drive(filename, data):
-    # Search for existing file
-    query = f"name='{filename}' and '{FOLDER_ID}' in parents and trashed=false"
-    response = drive_service.files().list(q=query, fields="files(id)").execute()
-    files = response.get('files', [])
-    
-    # Convert data to a stream
-    stream = io.BytesIO(json.dumps(data, indent=2).encode('utf-8'))
-    media = MediaIoBaseUpload(stream, mimetype='application/json', resumable=True)
+def upload_json(filename, data):
+    content = json.dumps(data, indent=2)
+    supabase.storage.from_(bucket).upload(file=io.BytesIO(content.encode()), path=filename, file_options={"content-type": "application/json", "upsert": True})
 
-    if files:
-        # Update existing file
-        file_id = files[0]['id']
-        updated_file = drive_service.files().update(
-            fileId=file_id,
-            media_body=media
-        ).execute()
+
+def download_json(filename):
+    res = supabase.storage.from_(bucket).download(filename)
+    if res:
+        return json.loads(res.decode())
     else:
-        # Create new file
-        file_metadata = {
-            'name': filename,
-            'parents': [FOLDER_ID],
-            'mimeType': 'application/json'
-        }
-        created_file = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
-
-def download_json_from_drive(filename):
-    # Find the file in the folder
-    query = f"name='{filename}' and '{FOLDER_ID}' in parents and trashed=false"
-    response = drive_service.files().list(q=query, fields="files(id)").execute()
-    files = response.get('files', [])
-
-    if not files:
         return None
-
-    file_id = files[0]['id']
-    request = drive_service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-
-    done = False
-    while not done:
-        status, done = downloader.next_chunk()
-
-    fh.seek(0)
-    return json.load(fh)
 
 ###################################################################
 
@@ -179,18 +132,18 @@ def update_price_variations():
     for item in trade_goods:
         variation = random.uniform(0.9, 1.1)
         variations[item["name"]] = variation
-    upload_json_to_drive("price_variations.json", variations)
+    upload_json("price_variations.json", variations)
     st.session_state.price_variations = variations
 
 # Load once on app startup
 if "stations" not in st.session_state:
-    st.session_state.stations = download_json_from_drive("stations.json") or []
+    st.session_state.stations = download_json("stations.json") or []
 
 if "current_station" not in st.session_state:
-    st.session_state.current_station = download_json_from_drive("current_station.json") or []
+    st.session_state.current_station = download_json("current_station.json") or []
 
 if "ship" not in st.session_state:
-    st.session_state.ship = download_json_from_drive("ship.json") or {"inventory": {}, "credits": 100000, "cargo_limit": 50}
+    st.session_state.ship = download_json("ship.json") or {"inventory": {}, "credits": 100000, "cargo_limit": 50}
 
 if "price_variations" not in st.session_state:
     update_price_variations()
@@ -269,7 +222,7 @@ if selected_tab == "Ship Cargo":
                 else:
                     del inventory[item_name]  # remove if 0
 
-                upload_json_to_drive("ship.json", ship)
+                upload_json("ship.json", ship)
                 st.session_state.alert = f"Ejected {eject_qty} units of {item_name}"
                 st.rerun()
 
@@ -281,14 +234,14 @@ if selected_tab == "Ship Cargo":
     credit_cols = st.columns([1, 1])
     if credit_cols[0].button("Add Funds"):
         ship["credits"] += credit_delta
-        upload_json_to_drive("ship.json", ship)
+        upload_json("ship.json", ship)
         st.session_state.alert = f"Added {credit_delta:.0f} credits" 
         st.rerun()
 
     if credit_cols[1].button("Spend Funds"):
         if ship["credits"] >= credit_delta:
             ship["credits"] -= credit_delta
-            upload_json_to_drive("ship.json", ship)
+            upload_json("ship.json", ship)
             st.session_state.alert = f"Spent {credit_delta:.0f} credits"
             st.rerun()
         else:
@@ -306,7 +259,7 @@ if selected_tab == "Ship Cargo":
     if st.button("Add Cargo"):
         inventory = st.session_state.ship["inventory"]
         inventory[selected_item] = inventory.get(selected_item, 0) + manual_qty
-        upload_json_to_drive("ship.json", st.session_state.ship)
+        upload_json("ship.json", st.session_state.ship)
         st.session_state.alert = f"Looted {manual_qty}x {selected_item}"
         st.rerun()
     
@@ -314,7 +267,7 @@ if selected_tab == "Ship Cargo":
     new_limit = st.number_input("Set new cargo limit", min_value=1, step=1, value=ship["cargo_limit"], key="cargo_limit_input")
     if st.button("Update Cargo Limit"):
         ship["cargo_limit"] = new_limit
-        upload_json_to_drive("ship.json", st.session_state.ship)
+        upload_json("ship.json", st.session_state.ship)
         st.session_state.alert = f"Updated cargo limit to {new_limit} units"
         st.rerun()
 
@@ -391,7 +344,7 @@ elif selected_tab == "Buy Goods":
                 # Update inventory
                 inventory[item["name"]] = inventory.get(item["name"], 0) + amount
                 ship["credits"] -= total_cost
-                upload_json_to_drive("ship.json", ship)
+                upload_json("ship.json", ship)
                 st.session_state.alert = f"Bought {amount}x {item['name']} for {total_cost:.0f} cr"
                 st.rerun()
 elif selected_tab == "Sell Goods":
@@ -472,7 +425,7 @@ elif selected_tab == "Sell Goods":
                     else:
                         del inventory[item_name]
 
-                    upload_json_to_drive("ship.json", ship)
+                    upload_json("ship.json", ship)
                     st.session_state.alert = f"Sold {amount}x {item_name} for {total_value:.0f} cr"
                     st.rerun()
 elif selected_tab == "Travel":
@@ -489,7 +442,7 @@ elif selected_tab == "Travel":
         else:
             if cols[1].button("Travel", key=f"travel_{idx}"):
                 st.session_state.current_station = name
-                upload_json_to_drive("current_station.json", name)
+                upload_json("current_station.json", name)
                 
                 # Re-generate shop items with 90% chance
                 shop_items = []
@@ -541,7 +494,7 @@ elif selected_tab == "Trade Station Config":
                 }
             }
             st.session_state.stations.append(station_data)
-            upload_json_to_drive("stations.json", st.session_state.stations)
+            upload_json("stations.json", st.session_state.stations)
             st.session_state.alert = f"Saved station: {station_name}"
             st.rerun()
 
@@ -561,6 +514,6 @@ elif selected_tab == "Trade Station Config":
     
         if st.button("Delete Station", key=f"delete_{idx}"):
             del st.session_state.stations[idx]
-            upload_json_to_drive("stations.json", st.session_state.stations)
+            upload_json("stations.json", st.session_state.stations)
             st.session_state.alert = f"Deleted station: {station['name']}"
             st.rerun()
