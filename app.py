@@ -15,8 +15,15 @@ bucket = "swnbucket"  # create this on Supabase dashboard
 
 
 def upload_json(filename, data):
-    content = json.dumps(data, indent=2)
-    supabase.storage.from_(bucket).upload(file=io.BytesIO(content.encode()), path=filename, file_options={"content-type": "application/json", "upsert": True})
+    content = json.dumps(data, indent=2).encode("utf-8")
+    stream = io.BytesIO(content)
+
+    supabase.storage.from_(bucket).upload(
+        filename,  # this is the path on Supabase
+        stream,
+        {"content-type": "application/json", "upsert": True}
+    )
+
 
 
 def download_json(filename):
